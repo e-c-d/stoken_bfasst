@@ -1,4 +1,6 @@
 
+#define STOKEN_BFASST_EXPORTS 1
+
 #include "stoken_bfasst.h"
 
 #include <openssl/conf.h>
@@ -45,6 +47,7 @@ error1:
 }
 
 
+STOKEN_BFASST_API
 int
 stoken_bfasst_generate_passcode(
     struct StokenBruteForceAssist *A

@@ -1,6 +1,16 @@
 #include <string.h>
 #include <inttypes.h>
 
+#ifdef _WIN32
+#    ifdef STOKEN_BFASST_EXPORTS
+#        define STOKEN_BFASST_API __declspec(dllexport)
+#    else
+#        define STOKEN_BFASST_API __declspec(dllimport)
+#    endif
+#else
+#    define STOKEN_BFASST_API
+#endif
+
 #define STOKEN_TIME_BLOCK_COUNT 5
 
 struct StokenBruteForceAssist {
@@ -12,5 +22,5 @@ struct StokenBruteForceAssist {
   int key_time_offset;
 };
 
-int
+STOKEN_BFASST_API int
 stoken_bfasst_generate_passcode(struct StokenBruteForceAssist *assist);
