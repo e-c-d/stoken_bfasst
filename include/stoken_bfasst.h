@@ -26,6 +26,12 @@ STOKEN_BFASST_API
 int
 stoken_bfasst_generate_passcode(struct StokenBruteForceAssist *assist);
 
+/* Search seed in an array of 16-byte seeds that results in a particular
+ * `code_out` that matches `wanted_code`.
+ *
+ * The number of 16-byte entries in `seeds` must be equal to `seeds_count`.
+ * If found, the index of the seed entry is written to `*found_seed_index_out`.
+ */
 STOKEN_BFASST_API
 int
 stoken_bfasst_search_seed(

@@ -43,11 +43,11 @@ def main():
     if ass.code_out_str != "26302029":
         raise ValueError("bad output code")
 
-    buf = bytearray(b"abcdefgh"*10000)
-    pos = 16*777 + 1
-    buf[pos:pos+16] = b"x" * 16
-    ass.seed[:] = b"\0"*16
-    out_index = c_size_t(0)
+    buf = bytearray(b"abcdefgh" * 10000)
+    pos = 16 * 777
+    buf[pos : pos + 16] = b"x" * 16
+    ass.seed[:] = b"\0" * 16
+    out_index = c_size_t(-1)
     seeds_count = len(buf) // 16
 
     buf_type = ctypes.c_byte * len(buf)
@@ -58,9 +58,12 @@ def main():
     if ret != 0:
         raise ValueError("bad return code {}".format(ret))
     if out_index.value != pos // 16:
-        raise AssertionError("did not find seed")
+        raise AssertionError(
+            "did not find seed; expected {}, got {}".format(pos // 16, out_index.value)
+        )
 
     print("all good")
+
 
 if __name__ == "__main__":
     main()
