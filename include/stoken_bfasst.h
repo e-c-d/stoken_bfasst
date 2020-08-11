@@ -22,5 +22,16 @@ struct StokenBruteForceAssist {
   int key_time_offset;
 };
 
-STOKEN_BFASST_API int
+STOKEN_BFASST_API
+int
 stoken_bfasst_generate_passcode(struct StokenBruteForceAssist *assist);
+
+STOKEN_BFASST_API
+int
+stoken_bfasst_search_seed(
+    struct StokenBruteForceAssist *A,
+    unsigned char *wanted_code,
+    unsigned char *seeds,
+    size_t seeds_count,
+    size_t *found_seed_index_out
+);

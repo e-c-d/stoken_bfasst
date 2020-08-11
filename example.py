@@ -1,5 +1,5 @@
 import ctypes
-from ctypes import c_byte, c_int, Structure, POINTER
+from ctypes import c_byte, c_char_p, c_int, c_size_t, Structure, POINTER
 
 
 class StokenBruteForceAssist(Structure):
@@ -21,13 +21,21 @@ class StokenBruteForceAssist(Structure):
 bfasst = ctypes.cdll.LoadLibrary("./libstoken_bfasst.so")
 bfasst.stoken_bfasst_generate_passcode.argtypes = [POINTER(StokenBruteForceAssist)]
 
+bfasst.stoken_bfasst_search_seed.argtypes = [
+    POINTER(StokenBruteForceAssist),
+    c_char_p,  # wanted_code
+    POINTER(c_byte),  # 16-byte seeds
+    c_size_t,  # seed count
+    POINTER(c_size_t),  # index of successful seed
+]
+
 
 def main():
     ass = StokenBruteForceAssist()
     ass.pin[:5] = b"1234\0"
     ass.digits = 8
     ass.key_time_offset = 0
-    ass.seed[:16] = b"x" * 16
+    ass.seed[:] = b"x" * 16
     ass.time_blocks[: 16 * 5] = b"y" * (16 * 5)
     ret = bfasst.stoken_bfasst_generate_passcode(ass)
     if ret != 0:
@@ -35,6 +43,24 @@ def main():
     if ass.code_out_str != "26302029":
         raise ValueError("bad output code")
 
+    buf = bytearray(b"abcdefgh"*10000)
+    pos = 16*777 + 1
+    buf[pos:pos+16] = b"x" * 16
+    ass.seed[:] = b"\0"*16
+    out_index = c_size_t(0)
+    seeds_count = len(buf) // 16
+
+    buf_type = ctypes.c_byte * len(buf)
+
+    ret = bfasst.stoken_bfasst_search_seed(
+        ass, b"26302029\0", buf_type.from_buffer(buf), seeds_count, out_index
+    )
+    if ret != 0:
+        raise ValueError("bad return code {}".format(ret))
+    if out_index.value != pos // 16:
+        raise AssertionError("did not find seed")
+
+    print("all good")
 
 if __name__ == "__main__":
     main()

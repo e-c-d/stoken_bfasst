@@ -7,6 +7,8 @@
 #include <openssl/evp.h>
 #include <openssl/err.h>
 
+#define AES128_BLOCK_SIZE 16
+
 static int
 encrypt_aes_128_ecb(EVP_CIPHER_CTX * ctx, unsigned char *plaintext,
                     int plaintext_len, unsigned char *key,
@@ -47,30 +49,24 @@ error1:
 }
 
 
-STOKEN_BFASST_API
-int
-stoken_bfasst_generate_passcode(
+static int
+stoken_bfasst_generate_passcode_helper(
+    EVP_CIPHER_CTX *ctx,
     struct StokenBruteForceAssist *A
 ) {
-    EVP_CIPHER_CTX *ctx;
-    unsigned char key[16], key2[16];
+    unsigned char key[AES128_BLOCK_SIZE], key2[AES128_BLOCK_SIZE];
     int i, j;
     int pin_len = strlen(A->pin);
     int result;
 
-    /* Create and initialise the context */
-    if (!(ctx = EVP_CIPHER_CTX_new())) {
-        result = -1;
-        goto error0;
-    }
-
-    result = -2;
+    result = -101;
     unsigned char *bl = A->time_blocks;
-    if (encrypt_aes_128_ecb(ctx, bl + 16*0, 16, A->seed, key) != 16) goto error1;
-    if (encrypt_aes_128_ecb(ctx, bl + 16*1, 16, key, key2) != 16) goto error1;
-    if (encrypt_aes_128_ecb(ctx, bl + 16*2, 16, key2, key) != 16) goto error1;
-    if (encrypt_aes_128_ecb(ctx, bl + 16*3, 16, key, key2) != 16) goto error1;
-    if (encrypt_aes_128_ecb(ctx, bl + 16*4, 16, key2, key) != 16) goto error1;
+    int N = AES128_BLOCK_SIZE;
+    if (encrypt_aes_128_ecb(ctx, bl + N*0, N, A->seed, key) != N) goto error0;
+    if (encrypt_aes_128_ecb(ctx, bl + N*1, N, key, key2) != N) goto error0;
+    if (encrypt_aes_128_ecb(ctx, bl + N*2, N, key2, key) != N) goto error0;
+    if (encrypt_aes_128_ecb(ctx, bl + N*3, N, key, key2) != N) goto error0;
+    if (encrypt_aes_128_ecb(ctx, bl + N*4, N, key2, key) != N) goto error0;
 
     uint32_t tokencode =
         (key[A->key_time_offset + 0] << 24) |
@@ -92,10 +88,69 @@ stoken_bfasst_generate_passcode(
 
     result = 0;
 
-error1:
+error0:
+    return result;
+}
+
+
+STOKEN_BFASST_API
+int
+stoken_bfasst_generate_passcode(
+    struct StokenBruteForceAssist *A
+) {
+    EVP_CIPHER_CTX *ctx;
+    int result;
+
+    /* Create and initialize the context */
+    if (!(ctx = EVP_CIPHER_CTX_new())) {
+        result = -100;
+        goto error0;
+    }
+
+    result = stoken_bfasst_generate_passcode_helper(ctx, A);
+
     EVP_CIPHER_CTX_free(ctx);
 
 error0:
     return result;
 }
 
+
+STOKEN_BFASST_API
+int
+stoken_bfasst_search_seed(
+    struct StokenBruteForceAssist *A,
+    unsigned char *wanted_code,
+    unsigned char *seeds,
+    size_t seeds_count,
+    size_t *found_seed_index_out
+) {
+    EVP_CIPHER_CTX *ctx;
+    int result;
+
+    /* Create and initialize the context */
+    if (!(ctx = EVP_CIPHER_CTX_new())) {
+        result = -100;
+        goto error0;
+    }
+
+    result = 0;
+    int i;
+    for (i = 0; i < seeds_count; i++) {
+        memcpy(A->seed, seeds + i*AES128_BLOCK_SIZE, AES128_BLOCK_SIZE);
+        if (stoken_bfasst_generate_passcode_helper(ctx, A) != 0) {
+            result = -103;
+            goto error1;
+        }
+        if (memcmp(A->code_out, wanted_code, A->digits) == 0) {
+            *found_seed_index_out = i;
+            break;
+        }
+    }
+
+error1:
+    EVP_CIPHER_CTX_free(ctx);
+
+error0:
+    return result;
+}
