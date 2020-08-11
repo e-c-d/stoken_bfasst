@@ -32,7 +32,7 @@ def main():
     ret = bfasst.stoken_bfasst_generate_passcode(ass)
     if ret != 0:
         raise ValueError("bad return code {}".format(ret))
-    if ass.code_out_str != "94968463":
+    if ass.code_out_str != "26302029":
         raise ValueError("bad output code")
 
 

@@ -53,7 +53,7 @@ stoken_bfasst_generate_passcode(
     struct StokenBruteForceAssist *A
 ) {
     EVP_CIPHER_CTX *ctx;
-    char key[16], key2[16];
+    unsigned char key[16], key2[16];
     int i, j;
     int pin_len = strlen(A->pin);
     int result;
@@ -65,7 +65,7 @@ stoken_bfasst_generate_passcode(
     }
 
     result = -2;
-    char *bl = A->time_blocks;
+    unsigned char *bl = A->time_blocks;
     if (encrypt_aes_128_ecb(ctx, bl + 16*0, 16, A->seed, key) != 16) goto error1;
     if (encrypt_aes_128_ecb(ctx, bl + 16*1, 16, key, key2) != 16) goto error1;
     if (encrypt_aes_128_ecb(ctx, bl + 16*2, 16, key2, key) != 16) goto error1;
