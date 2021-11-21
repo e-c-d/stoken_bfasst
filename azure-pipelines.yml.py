@@ -18,11 +18,11 @@ yaml.add_representer(
 def define_conda_jobs():
     # fmt: off
     ARCH = [
-        "32",
+        #"32",
         "64",
     ]
     OPENSSL = {
-        "1_0": ">=1.0,<1.1",
+        # "1_0": ">=1.0,<1.1",
         "1_1": ">=1.1,<1.2",
     }
     BUILD_TYPE = [
@@ -35,7 +35,7 @@ def define_conda_jobs():
         ARCH, OPENSSL.items(), BUILD_TYPE
     ):
         yield odict(
-            template="azure-pipelines/conda-windows-template.yml",
+            template="azure-pipelines/windows-template.yml",
             parameters=dict(
                 arch=arch,
                 openssl_version_name=ssl_name,
@@ -46,7 +46,11 @@ def define_conda_jobs():
 
 
 def main():
-    jobs = []
+    jobs = [
+        odict(
+            template="azure-pipelines/get_sources_job.yml",
+        ),
+    ]
     jobs.extend(define_conda_jobs())
 
     doc = {"jobs": jobs}

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 
-project(stoken_bfasst VERSION 1.0.0 DESCRIPTION "stoken_bfasst")
+project(stoken_bfasst VERSION 1.0.1 DESCRIPTION "stoken_bfasst")
 
 add_library(stoken_bfasst SHARED
     src/stoken_bfasst.c

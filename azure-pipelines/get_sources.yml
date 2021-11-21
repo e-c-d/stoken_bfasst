@@ -1,0 +1,7 @@
+steps:
+  - template: "get_source.yml"
+    parameters:
+      download_folder: "download-openssl"
+      download_filename: "openssl.tar.gz"
+      url: "https://www.openssl.org/source/openssl-1.1.1k.tar.gz"
+      sha512: "73CD042D4056585E5A9DD7AB68E7C7310A3A4C783EAFA07AB0B560E7462B924E4376436A6D38A155C687F6942A881CFC0C1B9394AFCDE1D8C46BF396E7D51121"
