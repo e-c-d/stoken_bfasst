@@ -56,10 +56,12 @@ jobs:
       call "$(VCVARS)"
       set CC=cl.exe
       set CXX=cl.exe
-      cmake -G "NMake Makefiles" -B build -DCMAKE_BUILD_TYPE=${{ parameters.build_type }}
+      cmake -G "NMake Makefiles" -B build ^
+        -DCMAKE_BUILD_TYPE=${{ parameters.build_type }} ^
+        -DOPENSSL_ROOT_DIR=$(Build.SourcesDirectory)\openssl
       cmake --build build
     displayName: Build stoken-fasst
-    
+
   - script: |
       dir /a-D /S /B build
     displayName: List built files
