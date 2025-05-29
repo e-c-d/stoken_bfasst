@@ -56,8 +56,17 @@ stoken_bfasst_generate_passcode_helper(
 ) {
     unsigned char key[AES128_BLOCK_SIZE], key2[AES128_BLOCK_SIZE];
     int i, j;
-    int pin_len = strlen(A->pin);
     int result;
+    int digits = A->digits;
+    int kt_offset = A->key_time_offset;
+
+    result = -200;
+    if (digits <= 0 || digits > 15) {
+        goto error0;
+    }
+    if (kt_offset < 0 || kt_offset >= 4) {
+        result = 0;
+    }
 
     result = -101;
     unsigned char *bl = A->time_blocks;
@@ -68,21 +77,20 @@ stoken_bfasst_generate_passcode_helper(
     if (encrypt_aes_128_ecb(ctx, bl + N*3, N, key, key2) != N) goto error0;
     if (encrypt_aes_128_ecb(ctx, bl + N*4, N, key2, key) != N) goto error0;
 
+    int off = kt_offset * 4;
+
     uint32_t tokencode =
-        (key[A->key_time_offset + 0] << 24) |
-        (key[A->key_time_offset + 1] << 16) |
-        (key[A->key_time_offset + 2] << 8) |
-        (key[A->key_time_offset + 3] << 0);
+        (key[off + 0] << 24) |
+        (key[off + 1] << 16) |
+        (key[off + 2] << 8) |
+        (key[off + 3] << 0);
 
     /* populate code_out backwards, adding PIN digits if available */
-    j = A->digits;
+    j = digits;
     A->code_out[j--] = 0;
     for (i = 0; j >= 0; j--, i++) {
         uint8_t c = tokencode % 10;
         tokencode /= 10;
-
-        if (i < pin_len)
-            c += A->pin[pin_len - i - 1] - '0';
         A->code_out[j] = c % 10 + '0';
     }
 
@@ -120,7 +128,7 @@ STOKEN_BFASST_API
 int
 stoken_bfasst_search_seed(
     struct StokenBruteForceAssist *A,
-    unsigned char *wanted_code,
+    char *wanted_code,
     unsigned char *seeds,
     size_t seeds_count,
     size_t *found_seed_index_out

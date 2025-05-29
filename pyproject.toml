@@ -1,0 +1,36 @@
+[tool.black]
+line-length = 120
+
+[project]
+name = "stoken_bfasst"
+version = "1.0.0"
+description = "Recover your RSA SecurID key from your memory dumps!"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Eduard Christian Dumitrescu", email = "eduard.c.dumitrescu@gmail.com" },
+]
+maintainers = [
+    { name = "Eduard Christian Dumitrescu", email = "eduard.c.dumitrescu@gmail.com" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3"
+]
+dependencies = []
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project.urls]
+Homepage = "https://fossil.example.com/"
+Changelog = "https://fossil.example.com/file?name=CHANGELOG.md&ci=trunk"
+
+[project.scripts]
+# your_executable_name = "stoken_bfasst.cli:app"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.package-data]
+"*" = ["*.*"]
