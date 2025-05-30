@@ -37,11 +37,11 @@ class TokenHack(_token.Token):
 
 
 def compute_time_blocks(serial: str, interval: int, digits: int, timestamp: datetime) -> dict:
-    token = TokenHack(serial=serial, seed=b"x" * 16, interval=interval, digits=digits)
+    token = TokenHack(serial=serial, seed=b"x" * 16, interval=interval, digits=8)
     try:
         # Here we are using an exception as a form of non-local control flow.
         token.at(timestamp)
-        raise AssertionError("expected to catch TokenHackOutput")
+        raise AssertionError("expected to catch TokenHackOutput")  # pragma: no cover
     except TokenHackOutputException as exc:
         d = dict(key_time_offset=exc.args[1])
     d["time_blocks"] = token.stoken_bfasst_generate_time_blocks(timestamp)

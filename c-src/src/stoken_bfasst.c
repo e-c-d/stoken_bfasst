@@ -61,16 +61,17 @@ stoken_bfasst_generate_passcode_helper(
     int kt_offset = A->key_time_offset;
 
     result = -200;
-    if (digits <= 0 || digits > 15) {
+    if (digits <= 0 || digits > 10) {
         goto error0;
     }
     if (kt_offset < 0 || kt_offset >= 4) {
-        result = 0;
+        goto error0;
     }
 
     result = -101;
     unsigned char *bl = A->time_blocks;
     int N = AES128_BLOCK_SIZE;
+
     if (encrypt_aes_128_ecb(ctx, bl + N*0, N, A->seed, key) != N) goto error0;
     if (encrypt_aes_128_ecb(ctx, bl + N*1, N, key, key2) != N) goto error0;
     if (encrypt_aes_128_ecb(ctx, bl + N*2, N, key2, key) != N) goto error0;
@@ -91,7 +92,7 @@ stoken_bfasst_generate_passcode_helper(
     for (i = 0; j >= 0; j--, i++) {
         uint8_t c = tokencode % 10;
         tokencode /= 10;
-        A->code_out[j] = c % 10 + '0';
+        A->code_out[j] = c + '0';
     }
 
     result = 0;
@@ -143,7 +144,7 @@ stoken_bfasst_search_seed(
     }
 
     result = 0;
-    int i;
+    size_t i;
     for (i = 0; i < seeds_count; i++) {
         memcpy(A->seed, seeds + i*AES128_BLOCK_SIZE, AES128_BLOCK_SIZE);
         if (stoken_bfasst_generate_passcode_helper(ctx, A) != 0) {

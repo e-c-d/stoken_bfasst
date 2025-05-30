@@ -112,7 +112,7 @@ class Lib:
         Search for a 16-byte seed among *seeds* such that when evaluated with parameters *params*, it gives you
         *wanted_code*.
 
-        Yield every index inside seeds for which the generated code matches *wanted_code*.
+        Yield every index inside *seeds* for which the generated code matches *wanted_code*.
         """
         out_index = c_size_t(-1)
         out_not_found = out_index.value
@@ -123,6 +123,7 @@ class Lib:
 
         index_offset = 0
         while seeds_count > 0:
+            out_index.value = out_not_found
             self.raw_lib.search_seed(params, wanted_code, cast(c_void_p(seeds_ptr), c_ubyte_p), seeds_count, out_index)
             index = out_index.value
 
@@ -135,3 +136,4 @@ class Lib:
             seeds_count -= delta
             seeds_ptr += delta * seed_size
             index_offset += delta
+            del delta
