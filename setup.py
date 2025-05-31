@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 import os
 import subprocess as sbp
@@ -10,7 +11,9 @@ from setuptools.dist import Distribution
 
 def build_csrc():
     if not os.environ.get("STOKEN_BFASST_NO_BUILD"):
-        sbp.run(["cmake", "-S", "c-src", "-B", "c-build"], check=True)
+        opts = os.environ.get("STOKEN_BFASST_CMAKE_OPTS")
+        opts = json.loads(opts) if opts else []
+        sbp.run(["cmake", "-S", "c-src", "-B", "c-build"] + opts, check=True)
         sbp.run(["cmake", "--build", "c-build"], check=True)
 
     artifact_rx = re.compile("^lib_stoken_bfasst\.(dylib|so|dll)$")
@@ -22,6 +25,7 @@ def build_csrc():
 
 class _Distribution(Distribution):
     """Distribution which always forces a binary package with platform name"""
+
     def has_ext_modules(self, *args, **kwargs):
         return True
 
