@@ -16,7 +16,7 @@ def build_csrc():
         sbp.run(["cmake", "-S", "c-src", "-B", "c-build"] + opts, check=True)
         sbp.run(["cmake", "--build", "c-build"], check=True)
 
-    artifact_rx = re.compile("^lib_stoken_bfasst\.(dylib|so|dll)$")
+    artifact_rx = re.compile(r"^lib_stoken_bfasst\.(dylib|so|dll)$")
 
     for p in Path("c-build").iterdir():
         if artifact_rx.search(p.name):
